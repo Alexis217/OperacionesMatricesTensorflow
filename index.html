@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operaciones con Matrices - TensorFlow.js</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .matrix-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .matrix {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 0 10px;
+        }
+        table {
+            border-collapse: collapse;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        input {
+            width: 50px;
+            margin: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 10px 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Operaciones con Matrices usando TensorFlow.js</h1>
+    
+    <div>
+        <h2>Definir Dimensiones</h2>
+        <label>Filas Matriz A: <input type="number" id="rowsA" min="1" value="2"></label>
+        <label>Columnas Matriz A: <input type="number" id="colsA" min="1" value="2"></label>
+        <br>
+        <label>Filas Matriz B: <input type="number" id="rowsB" min="1" value="2"></label>
+        <label>Columnas Matriz B: <input type="number" id="colsB" min="1" value="2"></label>
+    </div>
+    
+    <div>
+        <button id="generate-btn">Generar Matrices Aleatorias</button>
+        <button id="add-btn">Sumar Matrices</button>
+        <button id="multiply-btn">Multiplicar Matrices</button>
+    </div>
+    
+    <div class="matrix-container">
+        <div class="matrix">
+            <h3>Matriz A</h3>
+            <div id="matrixA"></div>
+        </div>
+        <div class="matrix">
+            <h3>Matriz B</h3>
+            <div id="matrixB"></div>
+        </div>
+        <div class="matrix">
+            <h3>Resultado</h3>
+            <div id="resultMatrix"></div>
+        </div>
+    </div>
+
+    <!-- Cargar TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
+    
+    <script>
+        // Variables para almacenar las matrices
+        let matrixA, matrixB;
+        
+        // Elementos del DOM
+        const generateBtn = document.getElementById('generate-btn');
+        const addBtn = document.getElementById('add-btn');
+        const multiplyBtn = document.getElementById('multiply-btn');
+        const matrixADiv = document.getElementById('matrixA');
+        const matrixBDiv = document.getElementById('matrixB');
+        const resultDiv = document.getElementById('resultMatrix');
+        
+        // Generar matrices aleatorias
+        generateBtn.addEventListener('click', () => {
+            const rowsA = parseInt(document.getElementById('rowsA').value);
+            const colsA = parseInt(document.getElementById('colsA').value);
+            const rowsB = parseInt(document.getElementById('rowsB').value);
+            const colsB = parseInt(document.getElementById('colsB').value);
+            
+            // Generar matrices aleatorias con valores entre 1 y 20
+            matrixA = tf.randomUniform([rowsA, colsA], 1, 21, 'int32');
+            matrixB = tf.randomUniform([rowsB, colsB], 1, 21, 'int32');
+            
+            // Mostrar las matrices
+            displayMatrix(matrixA, matrixADiv);
+            displayMatrix(matrixB, matrixBDiv);
+            resultDiv.innerHTML = '';
+        });
+        
+        // Sumar matrices
+        addBtn.addEventListener('click', () => {
+            if (!matrixA || !matrixB) {
+                alert('Primero genera las matrices');
+                return;
+            }
+            
+            try {
+                const result = tf.add(matrixA, matrixB);
+                displayMatrix(result, resultDiv);
+                result.dispose(); // Liberar memoria
+            } catch (error) {
+                alert('Error al sumar: ' + error.message);
+            }
+        });
+        
+        // Multiplicar matrices
+        multiplyBtn.addEventListener('click', () => {
+            if (!matrixA || !matrixB) {
+                alert('Primero genera las matrices');
+                return;
+            }
+            
+            try {
+                const result = tf.matMul(matrixA, matrixB);
+                displayMatrix(result, resultDiv);
+                result.dispose(); // Liberar memoria
+            } catch (error) {
+                alert('Error al multiplicar: ' + error.message);
+            }
+        });
+        
+        // Función para mostrar una matriz en el DOM
+        function displayMatrix(matrix, container) {
+            matrix.array().then(array => {
+                let html = '<table>';
+                for (let row of array) {
+                    html += '<tr>';
+                    for (let val of row) {
+                        html += `<td>${val}</td>`;
+                    }
+                    html += '</tr>';
+                }
+                html += '</table>';
+                container.innerHTML = html;
+            });
+        }
+        
+        // Limpiar memoria cuando se cierre la página
+        window.addEventListener('beforeunload', () => {
+            if (matrixA) matrixA.dispose();
+            if (matrixB) matrixB.dispose();
+        });
+    </script>
+</body>
+</html>
